@@ -346,7 +346,7 @@ type GetContentType struct {
 type Time time.Time
 
 func (t *Time) UnmarshalText(b []byte) error {
-	tt, err := http.ParseTime(string(b))
+	tt, err := time.Parse(time.RFC1123Z, string(b))
 	if err != nil {
 		return err
 	}

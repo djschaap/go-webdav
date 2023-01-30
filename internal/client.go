@@ -114,7 +114,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 func (c *Client) DoMultiStatus(req *http.Request) (*MultiStatus, error) {
 	resp, err := c.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Client).Do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -125,7 +125,7 @@ func (c *Client) DoMultiStatus(req *http.Request) (*MultiStatus, error) {
 	// TODO: the response can be quite large, support streaming Response elements
 	var ms MultiStatus
 	if err := xml.NewDecoder(resp.Body).Decode(&ms); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*xml.Decoder).Decode: %w", err)
 	}
 
 	return &ms, nil
@@ -134,7 +134,7 @@ func (c *Client) DoMultiStatus(req *http.Request) (*MultiStatus, error) {
 func (c *Client) PropFind(path string, depth Depth, propfind *PropFind) (*MultiStatus, error) {
 	req, err := c.NewXMLRequest("PROPFIND", path, propfind)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Client).NewXMLRequest(PROPFIND): %w", err)
 	}
 
 	req.Header.Add("Depth", depth.String())

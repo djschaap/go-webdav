@@ -79,14 +79,14 @@ var fileInfoPropFind = internal.NewPropNamePropFind(
 func fileInfoFromResponse(resp *internal.Response) (*FileInfo, error) {
 	path, err := resp.Path()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Response).Path: %w", err)
 	}
 
 	fi := &FileInfo{Path: path}
 
 	var resType internal.ResourceType
 	if err := resp.DecodeProp(&resType); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Response).DecodeProp(%#v): %w", resType, err)
 	}
 
 	if resType.Is(internal.CollectionName) {
@@ -114,7 +114,7 @@ func fileInfoFromResponse(resp *internal.Response) (*FileInfo, error) {
 
 	var getMod internal.GetLastModified
 	if err := resp.DecodeProp(&getMod); err != nil && !internal.IsNotFound(err) {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Response).DecodeProp(%#v): %w", getMod, err)
 	}
 	fi.ModTime = time.Time(getMod.LastModified)
 
@@ -151,14 +151,14 @@ func (c *Client) Readdir(name string, recursive bool) ([]FileInfo, error) {
 
 	ms, err := c.ic.PropFind(name, depth, fileInfoPropFind)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*internal.Client).PropFind(name=%s depth=%d fileInfoPropFind=%+v): %w", name, depth, fileInfoPropFind, err)
 	}
 
 	l := make([]FileInfo, 0, len(ms.Responses))
 	for _, resp := range ms.Responses {
 		fi, err := fileInfoFromResponse(&resp)
 		if err != nil {
-			return l, err
+			return l, fmt.Errorf("fileInfoFromResponse(resp=%+v): %w", resp, err)
 		}
 		l = append(l, *fi)
 	}

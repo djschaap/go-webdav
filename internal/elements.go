@@ -355,7 +355,7 @@ func (t *Time) UnmarshalText(b []byte) error {
 }
 
 func (t *Time) MarshalText() ([]byte, error) {
-	s := time.Time(*t).UTC().Format(http.TimeFormat)
+	s := time.Time(*t).UTC().Format(time.RFC1123Z)
 	return []byte(s), nil
 }
 

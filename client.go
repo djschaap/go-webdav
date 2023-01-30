@@ -85,9 +85,12 @@ func fileInfoFromResponse(resp *internal.Response) (*FileInfo, error) {
 	fi := &FileInfo{Path: path}
 
 	var resType internal.ResourceType
-	if err := resp.DecodeProp(&resType); err != nil {
-		return nil, fmt.Errorf("(*internal.Response).DecodeProp(%#v): %w", resType, err)
-	}
+	// HACK ignore lack of <resourcetype></resourcetype> (w/no collection) for file responses
+	//   collection response:  <resourcetype><collection></collection></resourcetype>
+	//   expected non-collection response:  <resourcetype></resourcetype>
+	//   actual non-collection response (which is now accepted):  ""
+	_ = resp.DecodeProp(&resType)
+	// TODO(djschaap): Capture error and selectively ignore only the expected error.
 
 	if resType.Is(internal.CollectionName) {
 		fi.IsDir = true

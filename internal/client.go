@@ -8,7 +8,6 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"unicode"
 )
@@ -41,7 +40,14 @@ func NewClient(c HTTPClient, endpoint string) (*Client, error) {
 
 func (c *Client) ResolveHref(p string) *url.URL {
 	if !strings.HasPrefix(p, "/") {
-		p = path.Join(c.endpoint.Path, p)
+		// BEWARE: path.Join will drop a trailing slash; RFC 4918 Section 5.2 allows
+		// a WebDAV server to require these trailing slashes.
+		// FIX: url.JoinPath (Go 1.19+)
+		var err error
+		p, err = url.JoinPath(c.endpoint.Path, p)
+		if err != nil {
+			panic(fmt.Sprintf("url.JoinPath(%s, %s): error %#v", c.endpoint.Path, p, err))
+		}
 	}
 	return &url.URL{
 		Scheme: c.endpoint.Scheme,

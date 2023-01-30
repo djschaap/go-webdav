@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/djschaap/go-webdav"
+	"github.com/djschaap/go-webdav/internal"
 	"github.com/emersion/go-ical"
-	"github.com/emersion/go-webdav"
-	"github.com/emersion/go-webdav/internal"
 )
 
 // TODO: add support for multiple calendars

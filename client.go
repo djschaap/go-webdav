@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/djschaap/go-webdav/internal"
@@ -157,8 +158,22 @@ func (c *Client) Readdir(name string, recursive bool) ([]FileInfo, error) {
 		return nil, fmt.Errorf("(*internal.Client).PropFind(name=%s depth=%d fileInfoPropFind=%+v): %w", name, depth, fileInfoPropFind, err)
 	}
 
+	u := c.ic.ResolveHref(name)
+	requestedPath := u.Path
+	if !strings.HasSuffix(requestedPath, "/") {
+		requestedPath += "/"
+	}
+
 	l := make([]FileInfo, 0, len(ms.Responses))
 	for _, resp := range ms.Responses {
+		p, err := resp.Path()
+		if err != nil {
+			return []FileInfo{}, fmt.Errorf("resp.Path(resp=%+v): %w", resp, err)
+		}
+		if p == requestedPath {
+			// If first response describes the collection itself, SKIP IT.
+			continue
+		}
 		fi, err := fileInfoFromResponse(&resp)
 		if err != nil {
 			return l, fmt.Errorf("fileInfoFromResponse(resp=%+v): %w", resp, err)
